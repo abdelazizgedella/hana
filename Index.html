@@ -17,7 +17,7 @@
   <style>
     :root {
       --bg: #020617;
-      --card: rgba(15, 23, 42, 0.88);
+      --card: rgba(15, 23, 42, 0.9);
       --line: rgba(148, 163, 184, 0.25);
       --blue: #0284c7;
       --green: #22c55e;
@@ -43,7 +43,7 @@
     }
 
     .app {
-      max-width: 1100px;
+      max-width: 1120px;
       margin: auto;
     }
 
@@ -57,7 +57,7 @@
     }
 
     .title {
-      font-size: 30px;
+      font-size: 31px;
       font-weight: 800;
       margin: 0;
       text-align: center;
@@ -72,7 +72,7 @@
 
     .nav {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(4, 1fr);
       gap: 8px;
       margin-top: 16px;
     }
@@ -114,7 +114,7 @@
 
     .scanner-grid {
       display: grid;
-      grid-template-columns: 1.2fr 0.8fr;
+      grid-template-columns: 1.15fr 0.85fr;
       gap: 14px;
     }
 
@@ -123,6 +123,12 @@
         grid-template-columns: 1fr;
       }
 
+      .nav {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 520px) {
       .nav {
         grid-template-columns: 1fr;
       }
@@ -227,6 +233,7 @@
       color: #052e16;
       font-family: 'Cairo', sans-serif;
       font-weight: 800;
+      cursor: pointer;
     }
 
     table {
@@ -329,6 +336,18 @@
       line-height: 1.8;
     }
 
+    .status-box {
+      margin-top: 10px;
+      padding: 12px;
+      border-radius: 16px;
+      border: 1px solid #334155;
+      background: rgba(2, 6, 23, 0.45);
+      color: #e2e8f0;
+      font-size: 14px;
+      line-height: 1.8;
+      word-break: break-word;
+    }
+
     @media print {
       body {
         background: white;
@@ -338,7 +357,8 @@
       .header,
       .cards-toolbar,
       #scanPage,
-      #dashboardPage {
+      #dashboardPage,
+      #testPage {
         display: none !important;
       }
 
@@ -373,6 +393,7 @@
         <button id="navScan" class="active" onclick="showPage('scan')">📷 التسجيل</button>
         <button id="navDashboard" onclick="showPage('dashboard')">📊 الإحصائيات</button>
         <button id="navCards" onclick="showPage('cards')">🪪 كروت الموظفين</button>
+        <button id="navTest" onclick="showPage('test')">🔌 اختبار الربط</button>
       </div>
     </div>
 
@@ -380,6 +401,7 @@
       <div class="scanner-grid">
         <div class="card">
           <div class="section-title">قراءة الباركود</div>
+
           <input id="deviceName" placeholder="اسم الموقع / الجهاز مثال: ER Gate 1">
 
           <div id="reader"></div>
@@ -389,12 +411,12 @@
             <button onclick="manualSubmit()">تسجيل</button>
           </div>
 
-          <button class="main-btn" style="width:100%; margin-top:12px;" onclick="startScanner()">
+          <button class="main-btn" style="width:100%; margin-top:12px;" onclick="restartScanner()">
             تشغيل / إعادة تشغيل الكاميرا
           </button>
 
           <div class="hint" style="margin-top:10px;">
-            ملاحظة: أول مرة قد يطلب المتصفح السماح للكاميرا. بعد السماح، الكاميرا ستظل مفتوحة وتقرأ تلقائيًا.
+            أول مرة قد يطلب المتصفح السماح للكاميرا. بعد السماح، الكاميرا ستظل مفتوحة وتسجل تلقائيًا عند قراءة الكارت.
           </div>
         </div>
 
@@ -454,10 +476,29 @@
         </div>
       </div>
     </div>
+
+    <div id="testPage" class="page">
+      <div class="card">
+        <div class="section-title">اختبار الاتصال مع Google Sheet</div>
+
+        <button class="main-btn" onclick="testConnection()" style="width:100%;">
+          اختبار الاتصال الآن
+        </button>
+
+        <div id="connectionStatus" class="status-box">
+          اضغط على اختبار الاتصال للتأكد أن Apps Script مربوط بشكل صحيح.
+        </div>
+
+        <div class="hint" style="margin-top:12px;">
+          لو ظهر خطأ، تأكد أن Web App منشور على Anyone وأن الرابط ينتهي بـ /exec وليس /dev.
+        </div>
+      </div>
+    </div>
   </div>
 
   <script>
-    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbx182LR-jvJmOVM958dmeGC6P1NpSZDjAGwoUQLQ23I90fmllMYpeuKcetfVui15K0b/exec';
+    
+    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyKBDNLzMGErWC7W-iAUjWIoBfB_RzdWf5pY5qsW1EPPL-pSvfrGqS5tFMhqKQpkcZj/exec';
     const APP_KEY = 'MEQYAS_HANA_2026';
 
     let html5QrCode = null;
@@ -471,22 +512,51 @@
 
       setTimeout(() => {
         startScanner();
-      }, 600);
+      }, 700);
     });
 
     function api(action, params = {}) {
       return new Promise((resolve, reject) => {
-        const callbackName = 'cb_' + Date.now() + '_' + Math.floor(Math.random() * 100000);
+        const callbackName =
+          'cb_' + Date.now() + '_' + Math.floor(Math.random() * 100000);
+
+        let finished = false;
+
+        const timeout = setTimeout(() => {
+          if (finished) return;
+
+          finished = true;
+          cleanup();
+
+          reject(new Error(
+            'لم يصل رد من Google Sheet. تأكد أن Apps Script منشور Web App وأن Access = Anyone.'
+          ));
+        }, 15000);
 
         window[callbackName] = function(data) {
-          resolve(data);
+          if (finished) return;
+
+          finished = true;
+          clearTimeout(timeout);
           cleanup();
+          resolve(data);
         };
 
-        const url = new URL(WEB_APP_URL);
+        let url;
+
+        try {
+          url = new URL(WEB_APP_URL);
+        } catch (e) {
+          clearTimeout(timeout);
+          cleanup();
+          reject(new Error('رابط WEB_APP_URL غير صحيح'));
+          return;
+        }
+
         url.searchParams.set('action', action);
         url.searchParams.set('key', APP_KEY);
         url.searchParams.set('callback', callbackName);
+        url.searchParams.set('_', Date.now());
 
         Object.keys(params).forEach(k => {
           url.searchParams.set(k, params[k] || '');
@@ -494,16 +564,31 @@
 
         const script = document.createElement('script');
         script.src = url.toString();
+
         script.onerror = function() {
-          reject(new Error('تعذر الاتصال بالـ Google Sheet'));
+          if (finished) return;
+
+          finished = true;
+          clearTimeout(timeout);
           cleanup();
+
+          reject(new Error(
+            'تعذر تحميل رابط Apps Script. غالبًا الرابط غير منشور للجميع أو تم تغيير رابط الـ deployment.'
+          ));
         };
 
         document.body.appendChild(script);
 
         function cleanup() {
-          delete window[callbackName];
-          if (script && script.parentNode) script.parentNode.removeChild(script);
+          try {
+            delete window[callbackName];
+          } catch (e) {
+            window[callbackName] = undefined;
+          }
+
+          if (script && script.parentNode) {
+            script.parentNode.removeChild(script);
+          }
         }
       });
     }
@@ -515,7 +600,10 @@
       if (page === 'scan') {
         document.getElementById('scanPage').classList.add('active');
         document.getElementById('navScan').classList.add('active');
-        setTimeout(startScanner, 300);
+
+        setTimeout(() => {
+          startScanner();
+        }, 300);
       }
 
       if (page === 'dashboard') {
@@ -529,12 +617,15 @@
         document.getElementById('navCards').classList.add('active');
         loadCards();
       }
+
+      if (page === 'test') {
+        document.getElementById('testPage').classList.add('active');
+        document.getElementById('navTest').classList.add('active');
+      }
     }
 
     async function startScanner() {
       if (scannerRunning) return;
-
-      const reader = document.getElementById('reader');
 
       try {
         if (!html5QrCode) {
@@ -570,8 +661,10 @@
         );
 
         scannerRunning = true;
+
       } catch (err) {
         scannerRunning = false;
+
         showResult({
           ok: false,
           status: 'Camera Error',
@@ -580,12 +673,26 @@
       }
     }
 
+    async function restartScanner() {
+      try {
+        if (html5QrCode && scannerRunning) {
+          await html5QrCode.stop();
+          scannerRunning = false;
+        }
+      } catch (e) {
+        scannerRunning = false;
+      }
+
+      setTimeout(() => {
+        startScanner();
+      }, 500);
+    }
+
     function onScanSuccess(decodedText) {
       const now = Date.now();
       const code = String(decodedText || '').trim();
 
       if (!code) return;
-
       if (busy) return;
 
       if (code === lastCode && now - lastCodeTime < 3500) {
@@ -599,7 +706,7 @@
     }
 
     function onScanFailure(error) {
-      // intentionally silent
+      // silent
     }
 
     function manualSubmit() {
@@ -640,6 +747,7 @@
         } else {
           vibrateBad();
         }
+
       } catch (err) {
         showResult({
           ok: false,
@@ -677,10 +785,41 @@
       `;
     }
 
+    async function testConnection() {
+      const box = document.getElementById('connectionStatus');
+      box.innerHTML = 'جاري اختبار الاتصال...';
+
+      try {
+        const res = await api('ping');
+
+        if (res.ok) {
+          box.innerHTML = `
+            ✅ الاتصال ناجح<br>
+            ${escapeHtml(res.message)}<br>
+            الوقت: ${escapeHtml(res.time || '')}
+          `;
+        } else {
+          box.innerHTML = `
+            ❌ الاتصال وصل لكن فيه مشكلة<br>
+            ${escapeHtml(res.message || JSON.stringify(res))}
+          `;
+        }
+
+      } catch (err) {
+        box.innerHTML = `
+          ❌ فشل الاتصال<br>
+          ${escapeHtml(err.message)}
+        `;
+      }
+    }
+
     async function loadDashboardStatsOnly() {
       try {
         const data = await api('dashboard');
-        if (data && data.stats) updateStats(data.stats);
+
+        if (data && data.stats) {
+          updateStats(data.stats);
+        }
       } catch (e) {}
     }
 
@@ -722,6 +861,7 @@
           <div class="section-title" style="margin-top:18px;">آخر عمليات التسجيل</div>
           ${recentRowsTable(data.rows || [])}
         `;
+
       } catch (err) {
         container.innerHTML = escapeHtml(err.message);
       }
@@ -730,11 +870,16 @@
     function objectTable(obj, headers) {
       const keys = Object.keys(obj || {});
 
-      if (!keys.length) return '<div class="hint">لا توجد بيانات اليوم</div>';
+      if (!keys.length) {
+        return '<div class="hint">لا توجد بيانات اليوم</div>';
+      }
 
       let html = '<table><thead><tr>';
 
-      headers.forEach(h => html += `<th>${h}</th>`);
+      headers.forEach(h => {
+        html += `<th>${escapeHtml(h)}</th>`;
+      });
+
       html += '</tr></thead><tbody>';
 
       keys.sort().forEach(k => {
@@ -747,7 +892,9 @@
     }
 
     function recentRowsTable(rows) {
-      if (!rows.length) return '<div class="hint">لا توجد عمليات تسجيل اليوم</div>';
+      if (!rows.length) {
+        return '<div class="hint">لا توجد عمليات تسجيل اليوم</div>';
+      }
 
       let html = `
         <table>
@@ -848,11 +995,15 @@
     }
 
     function vibrateOk() {
-      if (navigator.vibrate) navigator.vibrate([80]);
+      if (navigator.vibrate) {
+        navigator.vibrate([80]);
+      }
     }
 
     function vibrateBad() {
-      if (navigator.vibrate) navigator.vibrate([120, 80, 120]);
+      if (navigator.vibrate) {
+        navigator.vibrate([120, 80, 120]);
+      }
     }
 
     function escapeHtml(text) {
