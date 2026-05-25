@@ -11,7 +11,6 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
 
   <style>
     :root {
@@ -485,6 +484,10 @@
       loadSettingsPreview();
       loadAvailableDates();
 
+      setInterval(() => {
+        refreshStatsSilently();
+      }, 30000);
+
       showCameraStatus('حالة الكاميرا: جاهزة. اضغط تشغيل الكاميرا.');
 
       if (!window.isSecureContext) {
@@ -697,13 +700,13 @@
         const res = await api('scan', { code: code, device: device });
         showResult(res);
 
-        if (res.todayStats) updateStats(res.todayStats);
-        if (res.settings) renderSettingsPreview(res.settings);
-
         if (res.ok) {
+          updateStatsLocallyAfterScan(res);
           showToast(res.message || 'تم التسجيل بنجاح ✅');
           vibrateOk();
         } else {
+          if (res.todayStats) updateStats(res.todayStats);
+          if (res.settings) renderSettingsPreview(res.settings);
           showPopup(res);
           vibrateBad();
         }
@@ -728,6 +731,8 @@
         <div class="result-title">${escapeHtml(res.message || '')}</div>
         ${res.name ? `الاسم: ${escapeHtml(res.name)}<br>` : ''}
         ${res.staffId ? `Staff ID: ${escapeHtml(res.staffId)}<br>` : ''}
+        ${res.saved ? `حالة الحفظ: تم الحفظ في Google Sheet ✅<br>` : ''}
+        ${res.registeredAt ? `وقت التسجيل: ${escapeHtml(res.registeredAt)}<br>` : ''}
         ${res.gender ? `Gender: ${escapeHtml(genderLabel(res.gender))}<br>` : ''}
         ${res.department ? `القسم: ${escapeHtml(res.department)}<br>` : ''}
         ${res.position ? `الوظيفة: ${escapeHtml(res.position)}<br>` : ''}
@@ -843,6 +848,40 @@
       document.getElementById('femaleCount').innerText = genderTotals.Female || 0;
       document.getElementById('unknownGenderCount').innerText = genderTotals.Unknown || 0;
     }
+
+    function updateStatsLocallyAfterScan(res) {
+      incrementCounter('totalCount');
+
+      if (res.mealKey === 'Breakfast') incrementCounter('breakfastCount');
+      if (res.mealKey === 'Lunch') incrementCounter('lunchCount');
+      if (res.mealKey === 'Dinner') incrementCounter('dinnerCount');
+
+      if (res.gender === 'Male') {
+        incrementCounter('maleCount');
+      } else if (res.gender === 'Female') {
+        incrementCounter('femaleCount');
+      } else {
+        incrementCounter('unknownGenderCount');
+      }
+    }
+
+    function incrementCounter(id) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      const current = Number(String(el.innerText || '0').replace(/[^0-9.-]/g, '')) || 0;
+      el.innerText = current + 1;
+    }
+
+    async function refreshStatsSilently() {
+      try {
+        const data = await api('dashboard');
+        if (data && data.stats) updateStats(data.stats);
+        if (data && data.settings) renderSettingsPreview(data.settings);
+      } catch (e) {
+        // silent refresh only
+      }
+    }
+
 
     async function loadAvailableDates() {
       try {
@@ -970,8 +1009,40 @@
       return html;
     }
 
+
+    function loadScriptOnce(src, globalName) {
+      return new Promise((resolve, reject) => {
+        if (globalName && window[globalName]) {
+          resolve();
+          return;
+        }
+
+        const existing = document.querySelector(`script[data-src="${src}"]`);
+        if (existing) {
+          existing.addEventListener('load', resolve);
+          existing.addEventListener('error', reject);
+          return;
+        }
+
+        const script = document.createElement('script');
+        script.src = src;
+        script.dataset.src = src;
+        script.async = true;
+        script.onload = resolve;
+        script.onerror = reject;
+        document.body.appendChild(script);
+      });
+    }
+
     async function downloadDailyExcel() {
       const date = currentDashboardDate || document.getElementById('dashboardDate').value || new Date().toISOString().slice(0, 10);
+
+      try {
+        await loadScriptOnce('https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js', 'ExcelJS');
+      } catch (e) {
+        showPopup({ ok: false, popupType: 'error', popupTitle: 'Excel غير جاهز', message: 'تعذر تحميل مكتبة ExcelJS. تأكد من الاتصال بالإنترنت.' });
+        return;
+      }
 
       if (typeof ExcelJS === 'undefined') {
         showPopup({ ok: false, popupType: 'error', popupTitle: 'Excel غير جاهز', message: 'مكتبة ExcelJS لم يتم تحميلها. تأكد من الاتصال بالإنترنت.' });
