@@ -11,6 +11,7 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
 
   <style>
     :root {
@@ -21,13 +22,12 @@
       --green: #22c55e;
       --yellow: #f59e0b;
       --red: #ef4444;
+      --pink: #ec4899;
       --text: #f8fafc;
       --muted: #cbd5e1;
     }
 
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     body {
       margin: 0;
@@ -40,10 +40,7 @@
       padding: 14px;
     }
 
-    .app {
-      max-width: 1120px;
-      margin: auto;
-    }
+    .app { max-width: 1120px; margin: auto; }
 
     .header {
       background: rgba(2, 6, 23, 0.75);
@@ -54,19 +51,8 @@
       box-shadow: 0 20px 60px rgba(0,0,0,0.35);
     }
 
-    .title {
-      font-size: 31px;
-      font-weight: 800;
-      margin: 0;
-      text-align: center;
-    }
-
-    .subtitle {
-      text-align: center;
-      color: var(--muted);
-      margin-top: 4px;
-      font-size: 14px;
-    }
+    .title { font-size: 31px; font-weight: 800; margin: 0; text-align: center; }
+    .subtitle { text-align: center; color: var(--muted); margin-top: 4px; font-size: 14px; }
 
     .nav {
       display: grid;
@@ -93,25 +79,12 @@
       color: #052e16;
     }
 
-    .main-btn.green {
-      background: linear-gradient(135deg, #16a34a, #22c55e);
-      color: #052e16;
-      font-weight: 800;
-    }
+    .main-btn.green { background: linear-gradient(135deg, #16a34a, #22c55e); color: #052e16; font-weight: 800; }
+    .main-btn.red { background: linear-gradient(135deg, #dc2626, #ef4444); color: #fff; font-weight: 800; }
+    .main-btn.pink { background: linear-gradient(135deg, #db2777, #ec4899); color: #fff; font-weight: 800; }
 
-    .main-btn.red {
-      background: linear-gradient(135deg, #dc2626, #ef4444);
-      color: #fff;
-      font-weight: 800;
-    }
-
-    .page {
-      display: none;
-    }
-
-    .page.active {
-      display: block;
-    }
+    .page { display: none; }
+    .page.active { display: block; }
 
     .card {
       background: var(--card);
@@ -122,29 +95,16 @@
       margin-bottom: 14px;
     }
 
-    .scanner-grid {
-      display: grid;
-      grid-template-columns: 1.15fr 0.85fr;
-      gap: 14px;
-    }
+    .scanner-grid { display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 14px; }
 
     @media (max-width: 850px) {
-      .scanner-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .nav {
-        grid-template-columns: repeat(2, 1fr);
-      }
+      .scanner-grid { grid-template-columns: 1fr; }
+      .nav { grid-template-columns: repeat(2, 1fr); }
     }
 
-    @media (max-width: 520px) {
-      .nav {
-        grid-template-columns: 1fr;
-      }
-    }
+    @media (max-width: 520px) { .nav { grid-template-columns: 1fr; } }
 
-    input {
+    input, select {
       width: 100%;
       padding: 14px;
       border-radius: 16px;
@@ -165,9 +125,7 @@
       color: #0f172a;
     }
 
-    #reader video {
-      border-radius: 18px;
-    }
+    #reader video { border-radius: 18px; }
 
     .camera-placeholder {
       min-height: 315px;
@@ -192,37 +150,18 @@
       line-height: 1.9;
     }
 
-    .result.ok {
-      border-color: var(--green);
-      background: rgba(34, 197, 94, 0.15);
-    }
+    .result.ok { border-color: var(--green); background: rgba(34, 197, 94, 0.15); }
+    .result.bad { border-color: var(--red); background: rgba(239, 68, 68, 0.15); }
+    .result.duplicate { border-color: var(--yellow); background: rgba(245, 158, 11, 0.16); }
 
-    .result.bad {
-      border-color: var(--red);
-      background: rgba(239, 68, 68, 0.15);
-    }
+    .result-title { font-size: 22px; font-weight: 800; margin-bottom: 8px; }
 
-    .result.duplicate {
-      border-color: var(--yellow);
-      background: rgba(245, 158, 11, 0.16);
-    }
-
-    .result-title {
-      font-size: 22px;
-      font-weight: 800;
-      margin-bottom: 8px;
-    }
-
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 10px;
-    }
+    .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+    .stats-grid.three { grid-template-columns: repeat(3, 1fr); }
+    .stats-grid.two { grid-template-columns: repeat(2, 1fr); }
 
     @media (max-width: 650px) {
-      .stats-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
+      .stats-grid, .stats-grid.three, .stats-grid.two { grid-template-columns: repeat(2, 1fr); }
     }
 
     .stat {
@@ -233,27 +172,13 @@
       text-align: center;
     }
 
-    .stat .num {
-      font-size: 34px;
-      font-weight: 800;
-      color: #7dd3fc;
-    }
+    .stat .num { font-size: 34px; font-weight: 800; color: #7dd3fc; }
+    .stat .num.male { color: #7dd3fc; }
+    .stat .num.female { color: #f9a8d4; }
+    .stat .label { color: var(--muted); font-size: 13px; }
 
-    .stat .label {
-      color: var(--muted);
-      font-size: 13px;
-    }
-
-    .manual-row {
-      display: flex;
-      gap: 8px;
-      margin-top: 12px;
-    }
-
-    .manual-row input {
-      margin-bottom: 0;
-    }
-
+    .manual-row { display: flex; gap: 8px; margin-top: 12px; }
+    .manual-row input { margin-bottom: 0; }
     .manual-row button {
       width: 110px;
       border: 0;
@@ -265,12 +190,10 @@
       cursor: pointer;
     }
 
-    .btn-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-      margin-top: 12px;
-    }
+    .btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; }
+    .toolbar-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 12px; align-items: center; }
+
+    @media (max-width: 700px) { .toolbar-row { grid-template-columns: 1fr; } }
 
     table {
       width: 100%;
@@ -280,32 +203,14 @@
       font-size: 14px;
     }
 
-    th, td {
-      padding: 10px;
-      border-bottom: 1px solid #334155;
-      text-align: right;
-      vertical-align: top;
-    }
+    th, td { padding: 10px; border-bottom: 1px solid #334155; text-align: right; vertical-align: top; }
+    th { background: rgba(2, 6, 23, 0.75); color: #bae6fd; }
+    tr.row-male td { background: rgba(125, 211, 252, 0.11); }
+    tr.row-female td { background: rgba(249, 168, 212, 0.12); }
 
-    th {
-      background: rgba(2, 6, 23, 0.75);
-      color: #bae6fd;
-    }
+    .section-title { font-size: 21px; font-weight: 800; margin: 0 0 12px; color: #bae6fd; }
 
-    .section-title {
-      font-size: 21px;
-      font-weight: 800;
-      margin: 0 0 12px;
-      color: #bae6fd;
-    }
-
-    .cards-toolbar {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 12px;
-      flex-wrap: wrap;
-    }
-
+    .cards-toolbar { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
     .cards-toolbar button {
       border: 0;
       border-radius: 14px;
@@ -317,12 +222,7 @@
       cursor: pointer;
     }
 
-    .employee-cards {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(245px, 1fr));
-      gap: 12px;
-    }
-
+    .employee-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(245px, 1fr)); gap: 12px; }
     .employee-card {
       background: white;
       color: #0f172a;
@@ -333,50 +233,17 @@
       break-inside: avoid;
     }
 
-    .employee-card .brand {
-      background: #0f172a;
-      color: white;
-      padding: 8px;
-      border-radius: 14px;
-      font-weight: 800;
-      margin-bottom: 10px;
-    }
+    .employee-card .brand { background: #0f172a; color: white; padding: 8px; border-radius: 14px; font-weight: 800; margin-bottom: 10px; }
+    .qrbox { display: inline-block; background: white; padding: 10px; border-radius: 14px; margin: 4px auto 8px; }
+    .employee-card .emp-name { font-size: 18px; font-weight: 800; margin-top: 8px; }
+    .employee-card .emp-info { color: #475569; line-height: 1.6; font-size: 13px; }
+    .big-id { margin-top: 8px; font-size: 18px; font-weight: 800; background: #e0f2fe; color: #075985; border-radius: 12px; padding: 6px; }
+    .gender-badge { display: inline-block; margin-top: 8px; padding: 5px 10px; border-radius: 999px; font-size: 12px; font-weight: 800; }
+    .gender-male { background: #dbeafe; color: #1d4ed8; }
+    .gender-female { background: #fce7f3; color: #be185d; }
+    .gender-unknown { background: #e5e7eb; color: #374151; }
 
-    .qrbox {
-      display: inline-block;
-      background: white;
-      padding: 10px;
-      border-radius: 14px;
-      margin: 4px auto 8px;
-    }
-
-    .employee-card .emp-name {
-      font-size: 18px;
-      font-weight: 800;
-      margin-top: 8px;
-    }
-
-    .employee-card .emp-info {
-      color: #475569;
-      line-height: 1.6;
-      font-size: 13px;
-    }
-
-    .big-id {
-      margin-top: 8px;
-      font-size: 18px;
-      font-weight: 800;
-      background: #e0f2fe;
-      color: #075985;
-      border-radius: 12px;
-      padding: 6px;
-    }
-
-    .hint {
-      color: var(--muted);
-      font-size: 13px;
-      line-height: 1.8;
-    }
+    .hint { color: var(--muted); font-size: 13px; line-height: 1.8; }
 
     .status-box,
     .camera-status {
@@ -403,9 +270,7 @@
       padding: 18px;
     }
 
-    .modal-overlay.show {
-      display: flex;
-    }
+    .modal-overlay.show { display: flex; }
 
     .modal-card {
       width: 100%;
@@ -419,16 +284,7 @@
       animation: popIn .18s ease-out;
     }
 
-    @keyframes popIn {
-      from {
-        transform: scale(.92);
-        opacity: 0;
-      }
-      to {
-        transform: scale(1);
-        opacity: 1;
-      }
-    }
+    @keyframes popIn { from { transform: scale(.92); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
     .modal-icon {
       width: 62px;
@@ -443,58 +299,14 @@
       border: 1px solid rgba(125, 211, 252, .45);
     }
 
-    .modal-card.success .modal-icon {
-      background: rgba(34, 197, 94, .18);
-      border-color: rgba(34, 197, 94, .55);
-    }
+    .modal-card.success .modal-icon { background: rgba(34, 197, 94, .18); border-color: rgba(34, 197, 94, .55); }
+    .modal-card.warning .modal-icon { background: rgba(245, 158, 11, .18); border-color: rgba(245, 158, 11, .55); }
+    .modal-card.error .modal-icon { background: rgba(239, 68, 68, .18); border-color: rgba(239, 68, 68, .55); }
 
-    .modal-card.warning .modal-icon {
-      background: rgba(245, 158, 11, .18);
-      border-color: rgba(245, 158, 11, .55);
-    }
-
-    .modal-card.error .modal-icon {
-      background: rgba(239, 68, 68, .18);
-      border-color: rgba(239, 68, 68, .55);
-    }
-
-    .modal-title {
-      font-size: 24px;
-      font-weight: 800;
-      margin-bottom: 8px;
-    }
-
-    .modal-message {
-      color: #e2e8f0;
-      line-height: 1.9;
-      font-size: 15px;
-    }
-
-    .modal-details {
-      margin-top: 12px;
-      text-align: right;
-      background: rgba(2, 6, 23, .55);
-      border: 1px solid #334155;
-      padding: 12px;
-      border-radius: 16px;
-      color: #cbd5e1;
-      line-height: 1.8;
-      font-size: 14px;
-    }
-
-    .modal-close {
-      margin-top: 16px;
-      width: 100%;
-      border: 0;
-      border-radius: 16px;
-      padding: 13px;
-      background: #0284c7;
-      color: #fff;
-      font-family: 'Cairo', sans-serif;
-      font-size: 15px;
-      font-weight: 800;
-      cursor: pointer;
-    }
+    .modal-title { font-size: 24px; font-weight: 800; margin-bottom: 8px; }
+    .modal-message { color: #e2e8f0; line-height: 1.9; font-size: 15px; }
+    .modal-details { margin-top: 12px; text-align: right; background: rgba(2, 6, 23, .55); border: 1px solid #334155; padding: 12px; border-radius: 16px; color: #cbd5e1; line-height: 1.8; font-size: 14px; }
+    .modal-close { margin-top: 16px; width: 100%; border: 0; border-radius: 16px; padding: 13px; background: #0284c7; color: #fff; font-family: 'Cairo', sans-serif; font-size: 15px; font-weight: 800; cursor: pointer; }
 
     .toast {
       position: fixed;
@@ -514,43 +326,15 @@
       text-align: center;
     }
 
-    .toast.show {
-      display: block;
-    }
+    .toast.show { display: block; }
 
     @media print {
-      body {
-        background: white;
-        padding: 0;
-      }
-
-      .header,
-      .cards-toolbar,
-      #scanPage,
-      #dashboardPage,
-      #testPage,
-      .modal-overlay,
-      .toast {
-        display: none !important;
-      }
-
-      #cardsPage {
-        display: block !important;
-      }
-
-      .card {
-        box-shadow: none;
-        border: 0;
-        background: white;
-      }
-
-      .employee-cards {
-        grid-template-columns: repeat(3, 1fr);
-      }
-
-      .employee-card {
-        page-break-inside: avoid;
-      }
+      body { background: white; padding: 0; }
+      .header, .cards-toolbar, #scanPage, #dashboardPage, #testPage, .modal-overlay, .toast { display: none !important; }
+      #cardsPage { display: block !important; }
+      .card { box-shadow: none; border: 0; background: white; }
+      .employee-cards { grid-template-columns: repeat(3, 1fr); }
+      .employee-card { page-break-inside: avoid; }
     }
   </style>
 </head>
@@ -593,9 +377,7 @@
             <button onclick="manualSubmit()">تسجيل</button>
           </div>
 
-          <div id="cameraStatus" class="camera-status">
-            حالة الكاميرا: لم تبدأ بعد
-          </div>
+          <div id="cameraStatus" class="camera-status">حالة الكاميرا: لم تبدأ بعد</div>
 
           <div class="hint" style="margin-top:10px;">
             يتم التحكم في مواعيد الفطار والغداء والعشاء من شيت Settings داخل Google Sheet.
@@ -606,25 +388,16 @@
           <div class="section-title">توزيع اليوم</div>
 
           <div class="stats-grid">
-            <div class="stat">
-              <div id="totalCount" class="num">0</div>
-              <div class="label">الإجمالي</div>
-            </div>
+            <div class="stat"><div id="totalCount" class="num">0</div><div class="label">الإجمالي</div></div>
+            <div class="stat"><div id="breakfastCount" class="num">0</div><div class="label">الفطار</div></div>
+            <div class="stat"><div id="lunchCount" class="num">0</div><div class="label">الغداء</div></div>
+            <div class="stat"><div id="dinnerCount" class="num">0</div><div class="label">العشاء</div></div>
+          </div>
 
-            <div class="stat">
-              <div id="breakfastCount" class="num">0</div>
-              <div class="label">الفطار</div>
-            </div>
-
-            <div class="stat">
-              <div id="lunchCount" class="num">0</div>
-              <div class="label">الغداء</div>
-            </div>
-
-            <div class="stat">
-              <div id="dinnerCount" class="num">0</div>
-              <div class="label">العشاء</div>
-            </div>
+          <div class="stats-grid three" style="margin-top:10px;">
+            <div class="stat"><div id="maleCount" class="num male">0</div><div class="label">Male</div></div>
+            <div class="stat"><div id="femaleCount" class="num female">0</div><div class="label">Female</div></div>
+            <div class="stat"><div id="unknownGenderCount" class="num">0</div><div class="label">غير محدد</div></div>
           </div>
 
           <div id="scanResult" class="result" style="margin-top:14px;">
@@ -632,16 +405,23 @@
             شغّل الكاميرا ثم وجهها على QR Code الخاص بالموظف.
           </div>
 
-          <div id="settingsPreview" class="status-box">
-            جاري تحميل مواعيد الوجبات...
-          </div>
+          <div id="settingsPreview" class="status-box">جاري تحميل مواعيد الوجبات...</div>
         </div>
       </div>
     </div>
 
     <div id="dashboardPage" class="page">
       <div class="card">
-        <div class="section-title">إحصائيات اليوم</div>
+        <div class="section-title">إحصائيات اليوم والتواريخ السابقة</div>
+
+        <div class="toolbar-row">
+          <input id="dashboardDate" type="date" onchange="loadDashboard(this.value)">
+          <select id="availableDates" onchange="selectPreviousDate(this.value)">
+            <option value="">اختيار تاريخ سابق</option>
+          </select>
+          <button class="main-btn pink" onclick="downloadDailyExcel()">⬇️ تنزيل Excel للوجبات</button>
+        </div>
+
         <div id="dashboardContent">جاري تحميل البيانات...</div>
       </div>
     </div>
@@ -654,30 +434,19 @@
         </div>
 
         <div class="hint" style="margin-bottom:12px;">
-          أي موظف يتم إضافته في Sheet باسم Staff سيظهر له كارت QR تلقائيًا هنا بعد الضغط على تحديث الكروت.
+          أي موظف يتم إضافته في Sheet باسم Staff سيظهر له كارت QR تلقائيًا هنا بعد الضغط على تحديث الكروت. أضف عمود Gender في Staff واكتب Male أو Female.
         </div>
 
-        <div id="employeeCards" class="employee-cards">
-          جاري تحميل الكروت...
-        </div>
+        <div id="employeeCards" class="employee-cards">جاري تحميل الكروت...</div>
       </div>
     </div>
 
     <div id="testPage" class="page">
       <div class="card">
         <div class="section-title">اختبار الاتصال مع Google Sheet</div>
-
-        <button class="main-btn" onclick="testConnection()" style="width:100%;">
-          اختبار الاتصال الآن
-        </button>
-
-        <div id="connectionStatus" class="status-box">
-          اضغط على اختبار الاتصال للتأكد أن Apps Script مربوط بشكل صحيح.
-        </div>
-
-        <div class="hint" style="margin-top:12px;">
-          تأكد أن Web App منشور على Anyone وأن الرابط ينتهي بـ /exec وليس /dev.
-        </div>
+        <button class="main-btn" onclick="testConnection()" style="width:100%;">اختبار الاتصال الآن</button>
+        <div id="connectionStatus" class="status-box">اضغط على اختبار الاتصال للتأكد أن Apps Script مربوط بشكل صحيح.</div>
+        <div class="hint" style="margin-top:12px;">تأكد أن Web App منشور على Anyone وأن الرابط ينتهي بـ /exec وليس /dev.</div>
       </div>
     </div>
   </div>
@@ -703,10 +472,18 @@
     let busy = false;
     let lastCode = '';
     let lastCodeTime = 0;
+    let currentDashboardDate = '';
+    let currentDashboardData = null;
 
     window.addEventListener('load', () => {
+      const today = new Date().toISOString().slice(0, 10);
+      currentDashboardDate = today;
+      const dateInput = document.getElementById('dashboardDate');
+      if (dateInput) dateInput.value = today;
+
       loadDashboardStatsOnly();
       loadSettingsPreview();
+      loadAvailableDates();
 
       showCameraStatus('حالة الكاميرا: جاهزة. اضغط تشغيل الكاميرا.');
 
@@ -721,25 +498,18 @@
 
     function api(action, params = {}) {
       return new Promise((resolve, reject) => {
-        const callbackName =
-          'cb_' + Date.now() + '_' + Math.floor(Math.random() * 100000);
-
+        const callbackName = 'cb_' + Date.now() + '_' + Math.floor(Math.random() * 100000);
         let finished = false;
 
         const timeout = setTimeout(() => {
           if (finished) return;
-
           finished = true;
           cleanup();
-
-          reject(new Error(
-            'لم يصل رد من Google Sheet. تأكد أن Apps Script منشور Web App وأن Access = Anyone.'
-          ));
+          reject(new Error('لم يصل رد من Google Sheet. تأكد أن Apps Script منشور Web App وأن Access = Anyone.'));
         }, 15000);
 
         window[callbackName] = function(data) {
           if (finished) return;
-
           finished = true;
           clearTimeout(timeout);
           cleanup();
@@ -747,7 +517,6 @@
         };
 
         let url;
-
         try {
           url = new URL(WEB_APP_URL);
         } catch (e) {
@@ -762,37 +531,23 @@
         url.searchParams.set('callback', callbackName);
         url.searchParams.set('_', Date.now());
 
-        Object.keys(params).forEach(k => {
-          url.searchParams.set(k, params[k] || '');
-        });
+        Object.keys(params).forEach(k => url.searchParams.set(k, params[k] || ''));
 
         const script = document.createElement('script');
         script.src = url.toString();
-
         script.onerror = function() {
           if (finished) return;
-
           finished = true;
           clearTimeout(timeout);
           cleanup();
-
-          reject(new Error(
-            'تعذر تحميل رابط Apps Script. غالبًا الرابط غير منشور للجميع أو تم تغيير رابط الـ deployment.'
-          ));
+          reject(new Error('تعذر تحميل رابط Apps Script. غالبًا الرابط غير منشور للجميع أو تم تغيير رابط الـ deployment.'));
         };
 
         document.body.appendChild(script);
 
         function cleanup() {
-          try {
-            delete window[callbackName];
-          } catch (e) {
-            window[callbackName] = undefined;
-          }
-
-          if (script && script.parentNode) {
-            script.parentNode.removeChild(script);
-          }
+          try { delete window[callbackName]; } catch (e) { window[callbackName] = undefined; }
+          if (script && script.parentNode) script.parentNode.removeChild(script);
         }
       });
     }
@@ -810,7 +565,8 @@
       if (page === 'dashboard') {
         document.getElementById('dashboardPage').classList.add('active');
         document.getElementById('navDashboard').classList.add('active');
-        loadDashboard();
+        loadAvailableDates();
+        loadDashboard(currentDashboardDate || document.getElementById('dashboardDate').value);
       }
 
       if (page === 'cards') {
@@ -832,12 +588,7 @@
       }
 
       if (!window.isSecureContext) {
-        const res = {
-          ok: false,
-          popupType: 'error',
-          popupTitle: 'HTTPS مطلوب',
-          message: 'الكاميرا تحتاج HTTPS. افتح رابط GitHub Pages المباشر.'
-        };
+        const res = { ok: false, popupType: 'error', popupTitle: 'HTTPS مطلوب', message: 'الكاميرا تحتاج HTTPS. افتح رابط GitHub Pages المباشر.' };
         showResult(res);
         showPopup(res);
         showCameraStatus('فشل: الصفحة ليست HTTPS.');
@@ -845,12 +596,7 @@
       }
 
       if (typeof Html5Qrcode === 'undefined') {
-        const res = {
-          ok: false,
-          popupType: 'error',
-          popupTitle: 'مكتبة القراءة غير محملة',
-          message: 'مكتبة قراءة QR لم يتم تحميلها. تأكد من الاتصال بالإنترنت.'
-        };
+        const res = { ok: false, popupType: 'error', popupTitle: 'مكتبة القراءة غير محملة', message: 'مكتبة قراءة QR لم يتم تحميلها. تأكد من الاتصال بالإنترنت.' };
         showResult(res);
         showPopup(res);
         showCameraStatus('فشل: مكتبة Html5Qrcode غير محملة.');
@@ -859,92 +605,48 @@
 
       try {
         document.getElementById('reader').innerHTML = '';
-
-        html5QrCode = new Html5Qrcode('reader', {
-          verbose: false
-        });
+        html5QrCode = new Html5Qrcode('reader', { verbose: false });
 
         const config = {
           fps: 10,
           qrbox: function(viewfinderWidth, viewfinderHeight) {
             const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
             const size = Math.floor(minEdge * 0.82);
-            return {
-              width: size,
-              height: size
-            };
+            return { width: size, height: size };
           },
           aspectRatio: 1.0,
           disableFlip: false
         };
 
         if (window.Html5QrcodeSupportedFormats) {
-          config.formatsToSupport = [
-            Html5QrcodeSupportedFormats.QR_CODE
-          ];
+          config.formatsToSupport = [Html5QrcodeSupportedFormats.QR_CODE];
         }
 
         showCameraStatus('جاري طلب صلاحية الكاميرا...');
 
         try {
-          await html5QrCode.start(
-            { facingMode: 'environment' },
-            config,
-            onScanSuccess,
-            onScanFailure
-          );
+          await html5QrCode.start({ facingMode: 'environment' }, config, onScanSuccess, onScanFailure);
         } catch (firstError) {
           const cameras = await Html5Qrcode.getCameras();
-
-          if (!cameras || !cameras.length) {
-            throw new Error('لم يتم العثور على كاميرا في الجهاز.');
-          }
+          if (!cameras || !cameras.length) throw new Error('لم يتم العثور على كاميرا في الجهاز.');
 
           const backCamera = cameras.find(c => {
             const label = String(c.label || '').toLowerCase();
-            return label.includes('back') ||
-              label.includes('rear') ||
-              label.includes('environment') ||
-              label.includes('خلف');
+            return label.includes('back') || label.includes('rear') || label.includes('environment') || label.includes('خلف');
           });
 
           const cameraId = backCamera ? backCamera.id : cameras[cameras.length - 1].id;
-
-          await html5QrCode.start(
-            cameraId,
-            config,
-            onScanSuccess,
-            onScanFailure
-          );
+          await html5QrCode.start(cameraId, config, onScanSuccess, onScanFailure);
         }
 
         scannerRunning = true;
-
         showCameraStatus('الكاميرا تعمل الآن ✅ وجهها على QR Code.');
-        showResult({
-          ok: null,
-          message: 'الكاميرا شغالة ✅',
-          staffId: 'وجه الكاميرا على QR Code الموجود في الكارت'
-        });
+        showResult({ ok: null, message: 'الكاميرا شغالة ✅', staffId: 'وجه الكاميرا على QR Code الموجود في الكارت' });
 
       } catch (err) {
         scannerRunning = false;
-
-        document.getElementById('reader').innerHTML = `
-          <div class="camera-placeholder">
-            لم يتم تشغيل الكاميرا<br>
-            تأكد من السماح للكاميرا من إعدادات المتصفح
-          </div>
-        `;
-
-        const res = {
-          ok: false,
-          popupType: 'error',
-          popupTitle: 'مشكلة في الكاميرا',
-          message: 'لم يتم تشغيل الكاميرا. اسمح للكاميرا من المتصفح ثم اضغط تشغيل مرة أخرى.',
-          hint: err.message
-        };
-
+        document.getElementById('reader').innerHTML = `<div class="camera-placeholder">لم يتم تشغيل الكاميرا<br>تأكد من السماح للكاميرا من إعدادات المتصفح</div>`;
+        const res = { ok: false, popupType: 'error', popupTitle: 'مشكلة في الكاميرا', message: 'لم يتم تشغيل الكاميرا. اسمح للكاميرا من المتصفح ثم اضغط تشغيل مرة أخرى.', hint: err.message };
         showCameraStatus('فشل تشغيل الكاميرا: ' + err.message);
         showResult(res);
         showPopup(res);
@@ -961,74 +663,42 @@
 
       scannerRunning = false;
       html5QrCode = null;
-
-      document.getElementById('reader').innerHTML = `
-        <div class="camera-placeholder">
-          تم إيقاف الكاميرا<br>
-          اضغط تشغيل الكاميرا للبدء مرة أخرى
-        </div>
-      `;
-
+      document.getElementById('reader').innerHTML = `<div class="camera-placeholder">تم إيقاف الكاميرا<br>اضغط تشغيل الكاميرا للبدء مرة أخرى</div>`;
       showCameraStatus('تم إيقاف الكاميرا.');
     }
 
     function onScanSuccess(decodedText) {
       const now = Date.now();
       const code = String(decodedText || '').trim();
-
       if (!code) return;
       if (busy) return;
-
-      if (code === lastCode && now - lastCodeTime < 4000) {
-        return;
-      }
-
+      if (code === lastCode && now - lastCodeTime < 4000) return;
       lastCode = code;
       lastCodeTime = now;
-
       submitCode(code);
     }
 
-    function onScanFailure(error) {
-      // القراءة المستمرة تطلع أخطاء كثيرة أثناء البحث عن QR، لذلك لا نعرضها.
-    }
+    function onScanFailure(error) {}
 
     function manualSubmit() {
       const input = document.getElementById('manualCode');
       const code = input.value.trim();
-
       if (!code) return;
-
       submitCode(code);
       input.value = '';
     }
 
     async function submitCode(code) {
       busy = true;
-
-      showResult({
-        ok: null,
-        message: 'جاري التسجيل...',
-        staffId: code
-      });
+      showResult({ ok: null, message: 'جاري التسجيل...', staffId: code });
 
       try {
         const device = document.getElementById('deviceName').value || 'Mobile Scanner';
-
-        const res = await api('scan', {
-          code: code,
-          device: device
-        });
-
+        const res = await api('scan', { code: code, device: device });
         showResult(res);
 
-        if (res.todayStats) {
-          updateStats(res.todayStats);
-        }
-
-        if (res.settings) {
-          renderSettingsPreview(res.settings);
-        }
+        if (res.todayStats) updateStats(res.todayStats);
+        if (res.settings) renderSettingsPreview(res.settings);
 
         if (res.ok) {
           showToast(res.message || 'تم التسجيل بنجاح ✅');
@@ -1037,41 +707,28 @@
           showPopup(res);
           vibrateBad();
         }
-
       } catch (err) {
-        const res = {
-          ok: false,
-          popupType: 'error',
-          popupTitle: 'فشل الاتصال',
-          message: err.message
-        };
-
+        const res = { ok: false, popupType: 'error', popupTitle: 'فشل الاتصال', message: err.message };
         showResult(res);
         showPopup(res);
       }
 
-      setTimeout(() => {
-        busy = false;
-      }, 1800);
+      setTimeout(() => { busy = false; }, 1800);
     }
 
     function showResult(res) {
       const box = document.getElementById('scanResult');
 
-      if (res.ok === true) {
-        box.className = 'result ok';
-      } else if (res.status === 'Duplicate' || res.status === 'Outside Time') {
-        box.className = 'result duplicate';
-      } else if (res.ok === null) {
-        box.className = 'result';
-      } else {
-        box.className = 'result bad';
-      }
+      if (res.ok === true) box.className = 'result ok';
+      else if (res.status === 'Duplicate' || res.status === 'Outside Time') box.className = 'result duplicate';
+      else if (res.ok === null) box.className = 'result';
+      else box.className = 'result bad';
 
       box.innerHTML = `
         <div class="result-title">${escapeHtml(res.message || '')}</div>
         ${res.name ? `الاسم: ${escapeHtml(res.name)}<br>` : ''}
         ${res.staffId ? `Staff ID: ${escapeHtml(res.staffId)}<br>` : ''}
+        ${res.gender ? `Gender: ${escapeHtml(genderLabel(res.gender))}<br>` : ''}
         ${res.department ? `القسم: ${escapeHtml(res.department)}<br>` : ''}
         ${res.position ? `الوظيفة: ${escapeHtml(res.position)}<br>` : ''}
         ${res.hospital ? `المستشفى: ${escapeHtml(res.hospital)}<br>` : ''}
@@ -1087,26 +744,17 @@
       const title = document.getElementById('popupTitle');
       const message = document.getElementById('popupMessage');
       const details = document.getElementById('popupDetails');
-
       const type = res.popupType || 'warning';
 
       card.className = 'modal-card ' + type;
-
-      if (type === 'success') {
-        icon.innerHTML = '✅';
-      } else if (type === 'error') {
-        icon.innerHTML = '❌';
-      } else {
-        icon.innerHTML = '⚠️';
-      }
-
+      icon.innerHTML = type === 'success' ? '✅' : type === 'error' ? '❌' : '⚠️';
       title.innerHTML = escapeHtml(res.popupTitle || 'تنبيه');
       message.innerHTML = escapeHtml(res.message || '');
 
       let html = '';
-
       if (res.name) html += `الاسم: ${escapeHtml(res.name)}<br>`;
       if (res.staffId) html += `Staff ID: ${escapeHtml(res.staffId)}<br>`;
+      if (res.gender) html += `Gender: ${escapeHtml(genderLabel(res.gender))}<br>`;
       if (res.department) html += `القسم: ${escapeHtml(res.department)}<br>`;
       if (res.position) html += `الوظيفة: ${escapeHtml(res.position)}<br>`;
       if (res.hospital) html += `المستشفى: ${escapeHtml(res.hospital)}<br>`;
@@ -1116,33 +764,21 @@
 
       if (res.settings && res.settings.length) {
         html += '<br><b>مواعيد الوجبات الحالية:</b><br>';
-        res.settings.forEach(s => {
-          html += `${escapeHtml(s.mealArabic)}: ${escapeHtml(s.start)} - ${escapeHtml(s.end)}<br>`;
-        });
+        res.settings.forEach(s => { html += `${escapeHtml(s.mealArabic)}: ${escapeHtml(s.start)} - ${escapeHtml(s.end)}<br>`; });
       }
 
       details.innerHTML = html || 'لا توجد تفاصيل إضافية';
       overlay.classList.add('show');
     }
 
-    function hidePopup() {
-      document.getElementById('popupOverlay').classList.remove('show');
-    }
-
-    function closePopup(event) {
-      if (event.target.id === 'popupOverlay') {
-        hidePopup();
-      }
-    }
+    function hidePopup() { document.getElementById('popupOverlay').classList.remove('show'); }
+    function closePopup(event) { if (event.target.id === 'popupOverlay') hidePopup(); }
 
     function showToast(message) {
       const toast = document.getElementById('toast');
       toast.innerHTML = escapeHtml(message);
       toast.classList.add('show');
-
-      setTimeout(() => {
-        toast.classList.remove('show');
-      }, 2400);
+      setTimeout(() => toast.classList.remove('show'), 2400);
     }
 
     function showCameraStatus(message) {
@@ -1153,31 +789,21 @@
     async function loadSettingsPreview() {
       try {
         const data = await api('settings');
-        if (data && data.settings) {
-          renderSettingsPreview(data.settings);
-        }
+        if (data && data.settings) renderSettingsPreview(data.settings);
       } catch (e) {
-        document.getElementById('settingsPreview').innerHTML =
-          'تعذر تحميل مواعيد الوجبات من Settings.';
+        document.getElementById('settingsPreview').innerHTML = 'تعذر تحميل مواعيد الوجبات من Settings.';
       }
     }
 
     function renderSettingsPreview(settings) {
       const box = document.getElementById('settingsPreview');
-
       if (!box) return;
-
       if (!settings || !settings.length) {
         box.innerHTML = 'لا توجد مواعيد مفعلة في Settings.';
         return;
       }
-
       let html = '<b>مواعيد الوجبات الحالية:</b><br>';
-
-      settings.forEach(s => {
-        html += `${escapeHtml(s.mealArabic)}: ${escapeHtml(s.start)} - ${escapeHtml(s.end)}<br>`;
-      });
-
+      settings.forEach(s => { html += `${escapeHtml(s.mealArabic)}: ${escapeHtml(s.start)} - ${escapeHtml(s.end)}<br>`; });
       box.innerHTML = html;
     }
 
@@ -1187,43 +813,22 @@
 
       try {
         const res = await api('ping');
-
         if (res.ok) {
-          box.innerHTML = `
-            ✅ الاتصال ناجح<br>
-            ${escapeHtml(res.message)}<br>
-            الوقت: ${escapeHtml(res.time || '')}
-          `;
-
-          if (res.settings) {
-            renderSettingsPreview(res.settings);
-          }
+          box.innerHTML = `✅ الاتصال ناجح<br>${escapeHtml(res.message)}<br>الوقت: ${escapeHtml(res.time || '')}`;
+          if (res.settings) renderSettingsPreview(res.settings);
         } else {
-          box.innerHTML = `
-            ❌ الاتصال وصل لكن فيه مشكلة<br>
-            ${escapeHtml(res.message || JSON.stringify(res))}
-          `;
+          box.innerHTML = `❌ الاتصال وصل لكن فيه مشكلة<br>${escapeHtml(res.message || JSON.stringify(res))}`;
         }
-
       } catch (err) {
-        box.innerHTML = `
-          ❌ فشل الاتصال<br>
-          ${escapeHtml(err.message)}
-        `;
+        box.innerHTML = `❌ فشل الاتصال<br>${escapeHtml(err.message)}`;
       }
     }
 
     async function loadDashboardStatsOnly() {
       try {
         const data = await api('dashboard');
-
-        if (data && data.stats) {
-          updateStats(data.stats);
-        }
-
-        if (data && data.settings) {
-          renderSettingsPreview(data.settings);
-        }
+        if (data && data.stats) updateStats(data.stats);
+        if (data && data.settings) renderSettingsPreview(data.settings);
       } catch (e) {}
     }
 
@@ -1232,14 +837,42 @@
       document.getElementById('breakfastCount').innerText = stats.Breakfast || 0;
       document.getElementById('lunchCount').innerText = stats.Lunch || 0;
       document.getElementById('dinnerCount').innerText = stats.Dinner || 0;
+
+      const genderTotals = stats.genderTotals || {};
+      document.getElementById('maleCount').innerText = genderTotals.Male || 0;
+      document.getElementById('femaleCount').innerText = genderTotals.Female || 0;
+      document.getElementById('unknownGenderCount').innerText = genderTotals.Unknown || 0;
     }
 
-    async function loadDashboard() {
+    async function loadAvailableDates() {
+      try {
+        const data = await api('dates');
+        const select = document.getElementById('availableDates');
+        if (!select || !data.ok) return;
+        const current = select.value;
+        let html = '<option value="">اختيار تاريخ سابق</option>';
+        (data.dates || []).forEach(d => { html += `<option value="${escapeHtml(d)}">${escapeHtml(d)}</option>`; });
+        select.innerHTML = html;
+        select.value = current;
+      } catch (e) {}
+    }
+
+    function selectPreviousDate(value) {
+      if (!value) return;
+      document.getElementById('dashboardDate').value = value;
+      loadDashboard(value);
+    }
+
+    async function loadDashboard(dateValue) {
       const container = document.getElementById('dashboardContent');
       container.innerHTML = 'جاري تحميل البيانات...';
+      const date = dateValue || document.getElementById('dashboardDate').value || new Date().toISOString().slice(0,10);
+      currentDashboardDate = date;
+      document.getElementById('dashboardDate').value = date;
 
       try {
-        const data = await api('dashboard');
+        const data = await api('dashboard', { date });
+        currentDashboardData = data;
 
         if (!data.ok) {
           container.innerHTML = escapeHtml(data.message || 'تعذر تحميل البيانات');
@@ -1247,8 +880,11 @@
         }
 
         updateStats(data.stats);
+        fillDatesSelect(data.availableDates || []);
 
         container.innerHTML = `
+          <div class="status-box" style="margin-bottom:12px;">التاريخ المعروض: <b>${escapeHtml(data.selectedDate)}</b></div>
+
           <div class="stats-grid" style="margin-bottom:16px;">
             <div class="stat"><div class="num">${data.stats.total || 0}</div><div class="label">الإجمالي</div></div>
             <div class="stat"><div class="num">${data.stats.Breakfast || 0}</div><div class="label">الفطار</div></div>
@@ -1256,7 +892,16 @@
             <div class="stat"><div class="num">${data.stats.Dinner || 0}</div><div class="label">العشاء</div></div>
           </div>
 
-          <div class="section-title">مواعيد الوجبات من Settings</div>
+          <div class="stats-grid three" style="margin-bottom:16px;">
+            <div class="stat"><div class="num male">${(data.stats.genderTotals || {}).Male || 0}</div><div class="label">Male</div></div>
+            <div class="stat"><div class="num female">${(data.stats.genderTotals || {}).Female || 0}</div><div class="label">Female</div></div>
+            <div class="stat"><div class="num">${(data.stats.genderTotals || {}).Unknown || 0}</div><div class="label">غير محدد</div></div>
+          </div>
+
+          <div class="section-title">تصنيف Male / Female لكل وجبة</div>
+          ${genderByMealTable(data.stats.genderByMeal || {})}
+
+          <div class="section-title" style="margin-top:18px;">مواعيد الوجبات من Settings</div>
           ${settingsTable(data.settings || [])}
 
           <div class="section-title" style="margin-top:18px;">حسب القسم</div>
@@ -1268,101 +913,158 @@
           <div class="section-title" style="margin-top:18px;">آخر عمليات التسجيل</div>
           ${recentRowsTable(data.rows || [])}
         `;
-
       } catch (err) {
         container.innerHTML = escapeHtml(err.message);
       }
     }
 
-    function settingsTable(settings) {
-      if (!settings.length) {
-        return '<div class="hint">لا توجد مواعيد مفعلة في Settings</div>';
-      }
+    function fillDatesSelect(dates) {
+      const select = document.getElementById('availableDates');
+      if (!select) return;
+      let html = '<option value="">اختيار تاريخ سابق</option>';
+      dates.forEach(d => { html += `<option value="${escapeHtml(d)}">${escapeHtml(d)}</option>`; });
+      select.innerHTML = html;
+      select.value = currentDashboardDate;
+    }
 
-      let html = `
-        <table>
-          <thead>
-            <tr>
-              <th>الوجبة</th>
-              <th>البداية</th>
-              <th>النهاية</th>
-            </tr>
-          </thead>
-          <tbody>
-      `;
+    function genderByMealTable(obj) {
+      const keys = Object.keys(obj || {});
+      if (!keys.length) return '<div class="hint">لا توجد بيانات</div>';
 
-      settings.forEach(s => {
-        html += `
-          <tr>
-            <td>${escapeHtml(s.mealArabic)}</td>
-            <td>${escapeHtml(s.start)}</td>
-            <td>${escapeHtml(s.end)}</td>
-          </tr>
-        `;
+      let html = `<table><thead><tr><th>الوجبة</th><th>الإجمالي</th><th>Male</th><th>Female</th><th>غير محدد</th></tr></thead><tbody>`;
+      keys.forEach(k => {
+        const r = obj[k] || {};
+        html += `<tr><td>${escapeHtml(r.mealArabic || k)}</td><td>${r.total || 0}</td><td>${r.Male || 0}</td><td>${r.Female || 0}</td><td>${r.Unknown || 0}</td></tr>`;
       });
+      html += '</tbody></table>';
+      return html;
+    }
 
+    function settingsTable(settings) {
+      if (!settings.length) return '<div class="hint">لا توجد مواعيد مفعلة في Settings</div>';
+      let html = `<table><thead><tr><th>الوجبة</th><th>البداية</th><th>النهاية</th></tr></thead><tbody>`;
+      settings.forEach(s => { html += `<tr><td>${escapeHtml(s.mealArabic)}</td><td>${escapeHtml(s.start)}</td><td>${escapeHtml(s.end)}</td></tr>`; });
       html += '</tbody></table>';
       return html;
     }
 
     function objectTable(obj, headers) {
       const keys = Object.keys(obj || {});
-
-      if (!keys.length) {
-        return '<div class="hint">لا توجد بيانات اليوم</div>';
-      }
-
+      if (!keys.length) return '<div class="hint">لا توجد بيانات اليوم</div>';
       let html = '<table><thead><tr>';
-
-      headers.forEach(h => {
-        html += `<th>${escapeHtml(h)}</th>`;
-      });
-
+      headers.forEach(h => { html += `<th>${escapeHtml(h)}</th>`; });
       html += '</tr></thead><tbody>';
-
-      keys.sort().forEach(k => {
-        html += `<tr><td>${escapeHtml(k)}</td><td>${obj[k]}</td></tr>`;
-      });
-
+      keys.sort().forEach(k => { html += `<tr><td>${escapeHtml(k)}</td><td>${obj[k]}</td></tr>`; });
       html += '</tbody></table>';
-
       return html;
     }
 
     function recentRowsTable(rows) {
-      if (!rows.length) {
-        return '<div class="hint">لا توجد عمليات تسجيل اليوم</div>';
+      if (!rows.length) return '<div class="hint">لا توجد عمليات تسجيل لهذا التاريخ</div>';
+      let html = `<table><thead><tr><th>الوقت</th><th>الوجبة</th><th>الاسم</th><th>Gender</th><th>القسم</th><th>الموقع</th></tr></thead><tbody>`;
+      rows.forEach(r => {
+        const cls = r.gender === 'Male' ? 'row-male' : r.gender === 'Female' ? 'row-female' : '';
+        html += `<tr class="${cls}"><td>${escapeHtml(r.time)}</td><td>${escapeHtml(r.mealArabic || r.meal)}</td><td>${escapeHtml(r.fullName)}</td><td>${escapeHtml(genderLabel(r.gender))}</td><td>${escapeHtml(r.department)}</td><td>${escapeHtml(r.device)}</td></tr>`;
+      });
+      html += '</tbody></table>';
+      return html;
+    }
+
+    async function downloadDailyExcel() {
+      const date = currentDashboardDate || document.getElementById('dashboardDate').value || new Date().toISOString().slice(0, 10);
+
+      if (typeof ExcelJS === 'undefined') {
+        showPopup({ ok: false, popupType: 'error', popupTitle: 'Excel غير جاهز', message: 'مكتبة ExcelJS لم يتم تحميلها. تأكد من الاتصال بالإنترنت.' });
+        return;
       }
 
-      let html = `
-        <table>
-          <thead>
-            <tr>
-              <th>الوقت</th>
-              <th>الوجبة</th>
-              <th>الاسم</th>
-              <th>القسم</th>
-              <th>الموقع</th>
-            </tr>
-          </thead>
-          <tbody>
-      `;
+      showToast('جاري تجهيز ملف Excel...');
 
-      rows.forEach(r => {
-        html += `
-          <tr>
-            <td>${escapeHtml(r.time)}</td>
-            <td>${escapeHtml(r.meal)}</td>
-            <td>${escapeHtml(r.fullName)}</td>
-            <td>${escapeHtml(r.department)}</td>
-            <td>${escapeHtml(r.device)}</td>
-          </tr>
-        `;
-      });
+      try {
+        const data = await api('logs', { date });
+        if (!data.ok) throw new Error(data.message || 'تعذر تحميل السجل');
 
-      html += '</tbody></table>';
+        const rows = data.rows || [];
+        const settings = data.settings || [];
+        const workbook = new ExcelJS.Workbook();
+        workbook.creator = 'مقياس الهنا';
+        workbook.created = new Date();
 
-      return html;
+        const mealDefs = settings.length ? settings : [
+          { meal: 'Breakfast', mealArabic: 'الفطار' },
+          { meal: 'Lunch', mealArabic: 'الغداء' },
+          { meal: 'Dinner', mealArabic: 'العشاء' }
+        ];
+
+        mealDefs.forEach(mealDef => {
+          const sheetName = safeSheetName(mealDef.mealArabic || mealDef.meal || 'Meal');
+          const ws = workbook.addWorksheet(sheetName);
+
+          ws.columns = [
+            { header: 'Time', key: 'time', width: 14 },
+            { header: 'Staff ID', key: 'staffId', width: 16 },
+            { header: 'Name', key: 'fullName', width: 30 },
+            { header: 'Gender', key: 'gender', width: 16 },
+            { header: 'Department', key: 'department', width: 22 },
+            { header: 'Position', key: 'position', width: 22 },
+            { header: 'Hospital', key: 'hospital', width: 22 },
+            { header: 'Device', key: 'device', width: 22 }
+          ];
+
+          ws.getRow(1).font = { bold: true, color: { argb: 'FFFFFFFF' } };
+          ws.getRow(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF0F172A' } };
+          ws.getRow(1).alignment = { horizontal: 'center' };
+
+          const mealRows = rows.filter(r => String(r.meal || '') === String(mealDef.meal || '') || String(r.mealArabic || '') === String(mealDef.mealArabic || ''));
+
+          mealRows.forEach(r => {
+            const added = ws.addRow({
+              time: r.time || '',
+              staffId: r.staffId || '',
+              fullName: r.fullName || '',
+              gender: genderLabel(r.gender),
+              department: r.department || '',
+              position: r.position || '',
+              hospital: r.hospital || '',
+              device: r.device || ''
+            });
+
+            const gender = String(r.gender || 'Unknown');
+            const fillColor = gender === 'Male' ? 'FFD9EAF7' : gender === 'Female' ? 'FFFCE4EC' : 'FFF3F4F6';
+            added.eachCell(cell => {
+              cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: fillColor } };
+              cell.border = {
+                top: { style: 'thin', color: { argb: 'FFE5E7EB' } },
+                left: { style: 'thin', color: { argb: 'FFE5E7EB' } },
+                bottom: { style: 'thin', color: { argb: 'FFE5E7EB' } },
+                right: { style: 'thin', color: { argb: 'FFE5E7EB' } }
+              };
+            });
+          });
+
+          ws.addRow([]);
+          ws.addRow(['Summary', 'Total', mealRows.length, 'Male', mealRows.filter(r => r.gender === 'Male').length, 'Female', mealRows.filter(r => r.gender === 'Female').length, 'Unknown', mealRows.filter(r => r.gender === 'Unknown').length]);
+          ws.views = [{ state: 'frozen', ySplit: 1 }];
+        });
+
+        const buffer = await workbook.xlsx.writeBuffer();
+        const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `Meal_Log_${date}.xlsx`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+        showToast('تم تنزيل ملف Excel ✅');
+      } catch (err) {
+        showPopup({ ok: false, popupType: 'error', popupTitle: 'فشل تنزيل Excel', message: err.message });
+      }
+    }
+
+    function safeSheetName(name) {
+      return String(name || 'Sheet').replace(/[\\/*?:\[\]]/g, ' ').substring(0, 31);
     }
 
     async function loadCards() {
@@ -1371,14 +1073,12 @@
 
       try {
         const data = await api('cards');
-
         if (!data.ok) {
           container.innerHTML = escapeHtml(data.message || 'تعذر تحميل الكروت');
           return;
         }
 
         const staff = data.staff || [];
-
         if (!staff.length) {
           container.innerHTML = 'لا يوجد موظفين في Staff Sheet';
           return;
@@ -1390,18 +1090,15 @@
         }
 
         let html = '';
-
         staff.forEach((p, index) => {
+          const genderClass = p.gender === 'Male' ? 'gender-male' : p.gender === 'Female' ? 'gender-female' : 'gender-unknown';
           html += `
             <div class="employee-card">
               <div class="brand">مقياس الهنا - امسح QR</div>
-
               <div id="qr_${index}" class="qrbox"></div>
-
               <div class="big-id">${escapeHtml(p.staffId)}</div>
-
+              <div class="gender-badge ${genderClass}">${escapeHtml(genderLabel(p.gender))}</div>
               <div class="emp-name">${escapeHtml(p.fullName)}</div>
-
               <div class="emp-info">
                 القسم: ${escapeHtml(p.department)}<br>
                 الوظيفة: ${escapeHtml(p.position)}<br>
@@ -1412,7 +1109,6 @@
         });
 
         container.innerHTML = html;
-
         staff.forEach((p, index) => {
           new QRCode(document.getElementById(`qr_${index}`), {
             text: p.qrText,
@@ -1421,23 +1117,19 @@
             correctLevel: QRCode.CorrectLevel.H
           });
         });
-
       } catch (err) {
         container.innerHTML = escapeHtml(err.message);
       }
     }
 
-    function vibrateOk() {
-      if (navigator.vibrate) {
-        navigator.vibrate([80]);
-      }
+    function genderLabel(gender) {
+      if (gender === 'Male') return 'Male / ذكر';
+      if (gender === 'Female') return 'Female / أنثى';
+      return 'Unknown / غير محدد';
     }
 
-    function vibrateBad() {
-      if (navigator.vibrate) {
-        navigator.vibrate([120, 80, 120]);
-      }
-    }
+    function vibrateOk() { if (navigator.vibrate) navigator.vibrate([80]); }
+    function vibrateBad() { if (navigator.vibrate) navigator.vibrate([120, 80, 120]); }
 
     function escapeHtml(text) {
       return String(text || '')
